@@ -67,6 +67,7 @@ exports.addStory = (req, res) => {
             console.error('Error updating story:', err); 
             res.status(500).send('Error updating story'); 
         } else {
+            console.log('Story updated successfully:', results);
             res.redirect('/bucket'); 
         }
     });
@@ -164,7 +165,8 @@ exports.fetchBucketListItems = (req, res) => {
         FROM bucket_list_items b
         JOIN user u ON b.user_id = u.id
         WHERE b.image_url IS NOT NULL AND b.story IS NOT NULL
-    `;
+        `
+    ;
     db.query(query, (err, results) => {
         if (err) {
             console.error('Error fetching bucket list items:', err);
@@ -176,7 +178,6 @@ exports.fetchBucketListItems = (req, res) => {
         res.render('stories', { items: results });
     });
 };
-
 
 
 

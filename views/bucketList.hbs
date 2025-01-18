@@ -99,8 +99,8 @@ document.addEventListener("DOMContentLoaded", () => {
     
     shareButtons.forEach((shareButton) => {
         const id = shareButton.id.split('-')[1]; 
-        const popup = document.getElementById(experiencePopup-${id});
-        const closeButton = document.getElementById(closePopupButton-${id});
+        const popup = document.getElementById(`experiencePopup-${id}`);
+        const closeButton = document.getElementById(`closePopupButton-${id}`);
         
        
         shareButton?.addEventListener("click", () => {
