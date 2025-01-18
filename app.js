@@ -50,7 +50,7 @@ app.use('/auth', require('./routes/auth'));
 app.use('/bucket', require('./routes/bucket'));
 app.use('/api', require('./routes/itinerary'));
 
-
-app.listen(5000, () => {
+const PORT=process.env.PORT;
+app.listen(PORT, () => {
     console.log('Server started on port 5000 => http://localhost:5000');
 });
