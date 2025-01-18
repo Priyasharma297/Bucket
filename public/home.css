@@ -1,0 +1,148 @@
+body{
+    background-color: rgb(253, 253, 247);
+  }
+  .buttons .start-btn {
+    padding: 10px 20px;
+    background: rgba(0, 0, 0, 0.8);
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 1rem;
+    transition: background 0.3s ease;
+  }
+  
+  .buttons .start-btn:hover {
+    background: rgba(0, 0, 0, 1);
+  }
+  
+  .buttons .start-btn a {
+    color: white;
+    text-decoration: none;
+  }
+  
+  
+  .text-content {
+    max-width: 50%;
+  }
+  
+  .text-content h1 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+  }
+  
+  .text-content p {
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+  }
+  
+  .buttons {
+    display: flex;
+    gap: 20px;
+  }
+  
+  
+  
+  .start-btn {
+    background-color: rgba(43, 43, 43, 0.8);
+    color: white;
+    padding: 15px 30px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+  
+  
+  
+  
+  
+  
+          .collapsible-label {
+              background-color: #9b928e;
+              color:aliceblue;
+              cursor: pointer;
+              padding: 10px;
+              width: 500px;
+              height: 40px;;
+              text-align: center;
+              font-size: 20px;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              border-bottom: 1px solid #ccc;
+          }
+        
+          .collapsible-content {
+              max-height: 0;
+              overflow: hidden;
+              background-color:rgb(206, 203, 203);
+              color: black;
+              width: 500px;
+              transition: max-height 0.2s ease-out;
+              padding: 0 10px;
+          }
+          
+          .collapsible-checkbox {
+              display: none;
+          }
+          .collapsible-checkbox:checked + .collapsible-label + .collapsible-content {
+              max-height: 100px;
+              padding: 10px;
+          }
+
+          @media screen and (max-width: 768px) {
+            .im {
+                display: none; /* Hide image on mobile */
+            }
+
+            nav {
+                font-size: 16px;
+                padding: 5px 5px;
+                flex-direction: column; /* Stack items vertically */
+                align-items: flex-start;
+            }
+            nav ul{
+              padding: 2px;
+            }
+            .mainb{
+              flex-direction: column;
+            }
+            .collapsible-label{
+              width: 230px;
+            }
+            h1 {
+                font-size: 2rem;
+            }
+
+            hr {
+                width: 150px;
+            }
+
+            .story {
+                max-width: 600px;
+                padding: 15px;
+                font-size: 0.95rem;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            nav a {
+                font-size: 14px;
+                padding: 8px 10px;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            hr {
+                width: 120px;
+            }
+
+            .story {
+                max-width: 90%;
+                padding: 10px;
+                font-size: 0.9rem;
+                line-height: 1.4;
+            }
+        }

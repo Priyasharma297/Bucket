@@ -1,0 +1,135 @@
+body {
+    background-image: url('public\Images\bg.avif');
+    background-position: center;
+    background-size: cover;
+    background-color: beige;
+    background-blend-mode: soft-light;
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+
+/* Mobile view adjustments */
+@media (max-width: 768px) {
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    background-position: center;
+    background-size: cover;
+}
+
+h1 {
+    font-size: 40px;
+    text-align: center;
+}
+
+h3 {
+    font-size: 20px;
+    text-align: center;
+}
+
+.image-gallery img {
+    width: 200px;
+    height: 200px;
+    display: block;
+    margin: 0 auto;
+}
+
+.card-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-top: 20px;
+    width: 100%;
+}
+
+.card {
+    width: 60%;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.about-card {
+    width: 90%;
+    padding: 15px;
+    text-align: center;
+    margin: 0 auto;
+}
+
+.start_button a {
+    font-size: 16px;
+    text-align: center;
+    display: inline-block;
+}
+
+footer {
+    width: 100%;
+    text-align: center;
+}
+}
+
+@media (max-width: 480px) {
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    background-position: center;
+    background-size: cover;
+}
+
+h1 {
+    font-size: 35px;
+    text-align: center;
+}
+
+h3 {
+    font-size: 18px;
+    text-align: center;
+}
+
+.image-gallery img {
+    width: 220px;
+    height: 220px;
+    display: block;
+    margin: 0 auto;
+}
+
+.card-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.card {
+    width: 70%;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.about-card {
+    width: 90%;
+    padding: 10px;
+    text-align: center;
+    margin: 0 auto;
+}
+
+.start_button a {
+    font-size: 14px;
+    padding: 8px 16px;
+    text-align: center;
+    display: inline-block;
+}
+
+footer {
+    width: 100%;
+    text-align: center;
+}
+}
