@@ -1,8 +1,7 @@
 const express = require("express");
-const { getItinerary } = require("../controllers/itineraryController");
 const router = express.Router();
+const { getItinerary } = require("../controllers/itineraryController");
 
-// Route to handle itinerary form submission
 router.post("/generate", getItinerary);
 
 module.exports = router;

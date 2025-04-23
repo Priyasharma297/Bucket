@@ -1,107 +1,94 @@
-exports.register=(req,res)=>{
-    console.log(req.body);
-    const mysql=require("mysql2");
-    const db = mysql.createConnection({
-        host: process.env.HOST,
-        user: process.env.USER,
-        password: process.env.PASSWORD,
-        database: process.env.DATABASE
-    });
-    const{name,email,password,passwordConfirmed}=req.body;
-     db.query('SELECT email FROM user WHERE email=?',[email],async(error,results)=>{
-        if(error){
-            console.log(error);
+const jwt = require('jsonwebtoken');
+const mysql = require("mysql2");
+require('dotenv').config();
+const cloudinary = require('../utils/cloudinary'); // Import Cloudinary config from cloudinary.js
+const multer = require('multer');
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+const db = mysql.createConnection({
+    host: process.env.HOST,
+    user: process.env.USER,
+    password: process.env.PASSWORD,
+    database: process.env.DATABASE
+});
+
+// REGISTER
+exports.register = (req, res) => {
+    const { name, email, password, passwordConfirmed } = req.body;
+
+    db.query('SELECT email FROM user WHERE email=?', [email], async (error, results) => {
+        if (error) return console.log(error);
+
+        if (results.length > 0) {
+            return res.render('register', { message: 'Email is already in use , use another....' });
         }
-        if(results.length>0){
-            return res.render('register',{
-                message:'Email is already in use , use another....'
-            })
+
+        if (password !== passwordConfirmed) {
+            return res.render('register', { message: 'Password do not match !!' });
         }
-        else if(password!==passwordConfirmed){
-            return res.render('register',{
-                message:'Password do not match !!'
-            });
-        }
-db.query('INSERT INTO user SET ?',{name:name, email:email,password:password},(error, results)=>{
-    if(error){
-        console.log(error)
-    }else{
-        console.log(results);
-        return res.render('register',{
-            message:'User registered'
+
+        db.query('INSERT INTO user SET ?', { name, email, password }, (error, results) => {
+            if (error) return console.log(error);
+            return res.render('register', { message: 'User registered' });
         });
-    }
-})
-
-     });
-}
-exports.login = (req, res) => {
-    const mysql = require("mysql2");
-    const db = mysql.createConnection({
-        host: process.env.HOST,
-        user: process.env.USER,
-        password: process.env.PASSWORD,
-        database: process.env.DATABASE
     });
+};
 
+// LOGIN
+exports.login = (req, res) => {
     const { email, password } = req.body;
 
     db.query('SELECT * FROM user WHERE email = ?', [email], (error, results) => {
-        if (error) {
-            console.log(error);
-            return res.status(500).send('Internal Server Error');
-        }
-
-        if (results.length === 0) {
-            return res.render('login', {
-                message: 'Email or password is incorrect'
-            });
+        if (error) return res.status(500).send('Internal Server Error');
+        if (results.length === 0 || results[0].password !== password) {
+            return res.render('login', { message: 'Email or password is incorrect' });
         }
 
         const user = results[0];
+        const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '2h' });
 
-        if (user.password !== password) {
-            return res.render('login', {
-                message: 'Email or password is incorrect'
-            });
-        }
-        req.session.user = user;
-
-        console.log("Login successful");
-        return res.render('user', {
-            message: 'Login successful',
-            user: user
-        });
+        res.cookie('token', token, { httpOnly: true });
+        return res.render('user', { message: 'Login successful', user });
     });
 };
-exports.updateProfile = (req, res) => {
-    const { address, city, mobile, age, gender } = req.body;
-    const user = req.session.user;
-    const mysql = require("mysql2");
-    if (!user) {
-        return res.status(401).send('Unauthorized');
+
+// PROFILE UPDATE
+exports.updateProfile = [
+    upload.single('image'), // Handle image upload
+    (req, res) => {
+        const { address, city, mobile, age, gender } = req.body;
+        const user = req.user; // Retrieved from JWT middleware
+
+        // Check if there is an image to upload
+        let profileImageUrl = null;
+        if (req.file) {
+            cloudinary.uploader.upload_stream(
+                { folder: 'user_profiles' },
+                async (error, result) => {
+                    if (error) {
+                        return res.status(500).json({ success: false, message: 'Image upload failed' });
+                    }
+                    profileImageUrl = result.secure_url;
+                    // Proceed to update the profile data
+                    updateUserProfile(address, city, mobile, age, gender, profileImageUrl, user.email, res);
+                }
+            ).end(req.file.buffer);
+        } else {
+            // Proceed without updating the image
+            updateUserProfile(address, city, mobile, age, gender, profileImageUrl, user.email, res);
+        }
     }
+];
 
-    const db = mysql.createConnection({
-        host: process.env.HOST,
-        user: process.env.USER,
-        password: process.env.PASSWORD,
-        database: process.env.DATABASE
-    });
+// Helper function to update profile in DB
+function updateUserProfile(address, city, mobile, age, gender, profileImageUrl, email, res) {
+    const query = 'UPDATE user SET address = ?, city = ?, mobile = ?, age = ?, gender = ?, profileImage = ? WHERE email = ?';
+    const params = [address, city, mobile, age, gender, profileImageUrl || null, email];
 
-    const query = 'UPDATE user SET address = ?, city = ?, mobile = ?, age = ?, gender = ? WHERE email = ?';
-    db.query(query, [address, city, mobile, age, gender, user.email], (error, results) => {
+    db.query(query, params, (error, results) => {
         if (error) {
-            console.log(error);
             return res.status(500).json({ success: false });
         }
-
-        user.address = address;
-        user.city = city;
-        user.mobile = mobile;
-        user.age = age;
-        user.gender = gender;
-
         return res.json({ success: true });
     });
-};
+}

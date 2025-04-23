@@ -34,7 +34,7 @@
     <ul class="bucket-list" id="bucketList">
         {{#each items}}
             {{#if this.image_url}} 
-                <li class="bucket-item" data-name="{{this.item_name}}" onclick="openPopup('{{this.story}}')">
+                <li class="bucket-item" data-name="{{this.item_name}}" data-story="{{this.story}}" onclick="openPopupFromElement(this)">
                     <h3>{{this.item_name}}</h3>
                     <p><strong>By:</strong> {{this.user_name}}</p> 
                     <div class="content-container">
@@ -96,6 +96,12 @@
         function closePopup() {
             document.getElementById('popup').style.display = 'none';
         }
+        function openPopupFromElement(elem) {
+    const story = elem.getAttribute('data-story');
+    document.getElementById('story-content').innerText = story;
+    document.getElementById('popup').style.display = 'flex';
+}
+
     </script>
 </body>
 </html>

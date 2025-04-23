@@ -1,17 +1,10 @@
 const mysql = require('mysql2');
 const multer = require('multer');
 const path = require('path');
-
 const fs = require('fs');
+const cloudinary = require('../utils/cloudinary');
 
-const storage = multer.diskStorage({  
-    destination: (req, file, cb) => {
-        cb(null, 'uploads/');
-    },
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname));
-    }
-});
+const storage = multer.memoryStorage(); // using memory storage for cloudinary
 const upload = multer({ storage: storage });
 
 const db = mysql.createConnection({
@@ -29,8 +22,9 @@ db.connect((error) => {
     console.log("MYSQL connected....");
 });
 
+// ✅ Get Bucket List Items
 exports.getBucketList = (req, res) => {
-    const userId = req.session.user.id;
+    const userId = req.user.id;
 
     db.query('SELECT * FROM bucket_list_items WHERE user_id = ?', [userId], (err, results) => {
         if (err) {
@@ -39,14 +33,16 @@ exports.getBucketList = (req, res) => {
         }
 
         res.render('bucketList', {
-            items: results
+            items: results,
+            user: req.user
         });
     });
 };
 
+// ✅ Add Bucket List Item
 exports.addItem = (req, res) => {
     const { name } = req.body;
-    const userId = req.session.user.id;
+    const userId = req.user.id;
 
     db.query('INSERT INTO bucket_list_items (name, user_id) VALUES (?, ?)', [name, userId], (err, results) => {
         if (err) {
@@ -57,24 +53,23 @@ exports.addItem = (req, res) => {
     });
 };
 
-
+// ✅ Add Story to Item
 exports.addStory = (req, res) => {
-    const { id } = req.params; 
-    const { story } = req.body; 
+    const { id } = req.params;
+    const { story } = req.body;
 
     db.query('UPDATE bucket_list_items SET story = ? WHERE id = ?', [story, id], (err, results) => {
         if (err) {
-            console.error('Error updating story:', err); 
-            res.status(500).send('Error updating story'); 
+            console.error('Error updating story:', err);
+            res.status(500).send('Error updating story');
         } else {
             console.log('Story updated successfully:', results);
-            res.redirect('/bucket'); 
+            res.redirect('/bucket');
         }
     });
 };
 
-
-
+// ✅ Delete Item
 exports.deleteItem = (req, res) => {
     const { id } = req.params;
     db.query('SELECT image_url FROM bucket_list_items WHERE id = ?', [id], (err, results) => {
@@ -102,7 +97,6 @@ exports.deleteItem = (req, res) => {
                 });
             });
         } else {
-           
             db.query('DELETE FROM bucket_list_items WHERE id = ?', [id], (deleteErr) => {
                 if (deleteErr) {
                     console.error(deleteErr);
@@ -113,6 +107,8 @@ exports.deleteItem = (req, res) => {
         }
     });
 };
+
+// ✅ Check/Uncheck Item
 exports.checkItem = (req, res) => {
     const { id } = req.params;
     const { is_checked } = req.body;
@@ -126,24 +122,54 @@ exports.checkItem = (req, res) => {
     });
 };
 
-exports.uploadImage = [upload.single('image'), (req, res) => {
-    const { id } = req.params;
-    const imageUrl = `/uploads/${req.file.filename}`;
+// ✅ Upload Image to Cloudinary
+exports.uploadImage = [
+    upload.single('image'),
+    async (req, res) => {
+        const { id } = req.params;
 
-    db.query('UPDATE bucket_list_items SET image_url = ? WHERE id = ?', [imageUrl, id], (err, results) => {
-        if (err) {
-            console.log(err);
-        } else {
-            res.redirect('/bucket');
+        try {
+            const result = await cloudinary.uploader.upload_stream(
+                {
+                    folder: 'bucket_list_images',
+                },
+                async (error, result) => {
+                    if (error) {
+                        console.error('Cloudinary upload error:', error);
+                        return res.status(500).send('Cloudinary upload failed.');
+                    }
+
+                    const imageUrl = result.secure_url;
+
+                    db.query(
+                        'UPDATE bucket_list_items SET image_url = ? WHERE id = ?',
+                        [imageUrl, id],
+                        (err, dbRes) => {
+                            if (err) {
+                                console.error('MySQL update error:', err);
+                                return res.status(500).send('Database update failed.');
+                            }
+                            res.redirect('/bucket');
+                        }
+                    );
+                }
+            );
+
+            if (req.file && req.file.buffer) {
+                result.end(req.file.buffer);
+            } else {
+                return res.status(400).send('No image file provided.');
+            }
+        } catch (err) {
+            console.error('Unexpected error:', err);
+            res.status(500).send('Unexpected error occurred.');
         }
-    });
-}];
+    },
+];
 
+// ✅ Get All Image URLs (used for gallery)
 exports.getImages = (req, res) => {
-    const userId = req.session.user.id; 
-    if (!userId) {
-        return res.status(401).send('Unauthorized');
-    }
+    const userId = req.user.id;
 
     const query = 'SELECT image_url FROM bucket_list_items WHERE user_id = ?';
 
@@ -155,18 +181,17 @@ exports.getImages = (req, res) => {
         const imageUrls = results.map(result => result.image_url);
         res.json(imageUrls);
     });
-};  
+};
 
-
-
+// ✅ Fetch Items with Story & Image for Public Stories Page
 exports.fetchBucketListItems = (req, res) => {
     const query = `
         SELECT b.name AS item_name, b.image_url, b.story, u.name AS user_name
         FROM bucket_list_items b
         JOIN user u ON b.user_id = u.id
         WHERE b.image_url IS NOT NULL AND b.story IS NOT NULL
-        `
-    ;
+    `;
+
     db.query(query, (err, results) => {
         if (err) {
             console.error('Error fetching bucket list items:', err);
@@ -178,10 +203,3 @@ exports.fetchBucketListItems = (req, res) => {
         res.render('stories', { items: results });
     });
 };
-
-
-
-
-
-
-

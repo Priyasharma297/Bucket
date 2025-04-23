@@ -5,6 +5,7 @@ const session = require('express-session');    //sessions for individual user
 const hbs = require('hbs');                   // for frontend
 const dotenv = require('dotenv');             //to encrypt
 
+
 dotenv.config({ path: './.env' });
 hbs.registerPartials(__dirname + '/views/partials');
 hbs.registerHelper('equals', function (a, b) {       //to compare two values
@@ -13,6 +14,9 @@ hbs.registerHelper('equals', function (a, b) {       //to compare two values
 
 const app = express();
 app.set('view engine', 'hbs');
+
+const cookieParser = require('cookie-parser');
+app.use(cookieParser());
 
 const db = mysql.createConnection({
     host: process.env.HOST,

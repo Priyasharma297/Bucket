@@ -25,7 +25,7 @@
     <br>
     <div class="container">
         <div class="profile-header">
-            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ_Ctio9d7UbPoFkuH6-h1kqcruqY3kgjwBSA&s" alt="User Icon">
+            <img id="profileImage" src="{{#if user.profileImage}}{{user.profileImage}}{{else}}https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ_Ctio9d7UbPoFkuH6-h1kqcruqY3kgjwBSA&s{{/if}}" alt="User Icon">
             <div class="details">
                 <h1>{{user.name}}</h1>
                 <p><b>Email: </b>{{user.email}}</p>
@@ -41,6 +41,7 @@
         <div class="update-header">
             <div class="details">
                 <h2><i>Update your information</i></h2>
+                <p><b>Profile Image: </b><input type="file" id="image" accept="image/*"></p>
                 <p><b>Address: </b><input type="text" id="address" placeholder="Address"></p>
                 <p><b>City: </b><input type="text" id="city" placeholder="City"></p>
                 <p><b>Mobile Number: </b><input type="text" id="mobile" placeholder="Mobile Number"></p>
@@ -58,47 +59,49 @@
     </div>
 
     <script>
-        const updateBtn = document.querySelector('.show-update-btn');
-        const profileHeader = document.querySelector('.profile-header');
-        const updateHeader = document.querySelector('.update-header');
+    const updateBtn = document.querySelector('.show-update-btn');
+    const profileHeader = document.querySelector('.profile-header');
+    const updateHeader = document.querySelector('.update-header');
 
-        updateBtn.addEventListener('click', function() {
-            profileHeader.style.display = 'none';
-            updateHeader.style.display = 'block';
+    updateBtn.addEventListener('click', function() {
+        profileHeader.style.display = 'none';
+        updateHeader.style.display = 'block';
+    });
+
+    document.getElementById('updateBtn').addEventListener('click', function() {
+        const address = document.getElementById('address').value;
+        const city = document.getElementById('city').value;
+        const mobile = document.getElementById('mobile').value;
+        const age = document.getElementById('age').value;
+        const gender = document.getElementById('gender').value;
+        const image = document.getElementById('image').files[0];
+
+        const formData = new FormData();
+        formData.append('address', address);
+        formData.append('city', city);
+        formData.append('mobile', mobile);
+        formData.append('age', age);
+        formData.append('gender', gender);
+        if (image) {
+            formData.append('image', image);
+        }
+
+        fetch('/auth/updateProfile', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Profile updated successfully!');
+                window.location.reload(); // ✅ refresh to see updated values
+            } else {
+                alert('Error updating profile.');
+            }
         });
+    });
+</script>
 
-        document.getElementById('updateBtn').addEventListener('click', function() {
-            const address = document.getElementById('address').value;
-            const city = document.getElementById('city').value;
-            const mobile = document.getElementById('mobile').value;
-            const age = document.getElementById('age').value;
-            const gender = document.getElementById('gender').value;
-
-            fetch('/auth/updateProfile', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    address: address,
-                    city: city,
-                    mobile: mobile,
-                    age: age,
-                    gender: gender
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Profile updated successfully!');
-                    updateHeader.style.display = 'none';
-                    profileHeader.style.display = 'block';
-                } else {
-                    alert('Error updating profile.');
-                }
-            });
-        });
-    </script>
     <br>
     <br>
     <br>

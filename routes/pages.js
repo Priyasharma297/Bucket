@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const authController = require('./auth'); 
+const { verifyToken } = require('../middleware/authMiddleware'); // import your middleware
+const mysql = require("mysql2");
+
 router.get('/', (req, res) => {
     res.render('index');
 });
@@ -21,53 +23,51 @@ router.get('/explore', (req, res) => {
     res.render('explore');
 });
 
-router.get('/bucketList', (req, res) => {
-    res.render('bucketList');
+router.get('/bucketList', verifyToken, (req, res) => {
+    res.render('bucketList', { user: req.user });
 });
 
-router.get('/user', (req, res) => {
-    const user = req.session.user;
-    if (!user) {
-        return res.redirect('/login');
-    }
+router.get('/user', verifyToken, (req, res) => {
     res.render('user', {
         message: 'User page',
-        user: user
+        user: req.user
     });
 });
 
-router.get('/profile', (req, res) => {
-    const user = req.session.user;
-    if (!user) {
-        return res.redirect('/login');
-    }
-    res.render('profile', {
-        message: 'Profile page',
-        user: user
+
+router.get("/profile", verifyToken, (req, res) => {
+    const db = mysql.createConnection({
+        host: process.env.HOST,
+        user: process.env.USER,
+        password: process.env.PASSWORD,
+        database: process.env.DATABASE,
+    });
+
+    const query = 'SELECT * FROM user WHERE email = ?';
+    db.query(query, [req.user.email], (err, results) => {
+        if (err || results.length === 0) return res.redirect("/login");
+
+        const user = results[0];
+        res.render("profile", { user });
     });
 });
 
-router.get('/story', (req, res) => {
+router.get('/story', verifyToken, (req, res) => {
     res.render('story');
 });
 
-router.get('/stories', (req, res) => {
+router.get('/stories', verifyToken, (req, res) => {
     res.render('stories');
 });
 
 router.get('/logout', (req, res) => {
-    req.session.destroy((err) => {
-        if (err) {
-            console.log('Error destroying session:', err);
-            return next(err);
-        }
-        res.clearCookie('connect.sid'); 
-        res.redirect('/login'); 
-    });
+    res.clearCookie('token');
+    res.redirect('/login');
 });
 
-router.get('/itinerary', (req, res) => {
-    res.render('itinerary'); 
+router.get('/itinerary', verifyToken, (req, res) => {
+    res.render('itinerary', { user: req.user });
 });
+
 
 module.exports = router;

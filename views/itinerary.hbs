@@ -67,9 +67,26 @@
           <ul>
 {{#each itinerary}}
   <div class="itinerary-item">
-    <strong>Day {{dayNumber}}:</strong> {{activity}}
+    <strong>Day {{dayNumber}}:</strong>
+    <ul>
+      {{#each activities}}
+        <li>{{this}}</li>
+      {{/each}}
+    </ul>
   </div>
 {{/each}}
+{{#if generalTips}}
+  <div class="tips-section">
+    <h3>General Travel Tips:</h3>
+    <ul>
+      {{#each generalTips}}
+        <li>{{this}}</li>
+      {{/each}}
+    </ul>
+  </div>
+{{/if}}
+
+
           </ul>
         </div>
       </div>

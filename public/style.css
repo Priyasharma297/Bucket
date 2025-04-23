@@ -61,7 +61,7 @@ body{
 
 .about-card button {
    background-color: white;
-   color: #f12711;
+   color: #f74532;
    padding: 10px 20px;
    border-radius: 10px;
    border: none;
@@ -72,7 +72,7 @@ body{
 }
 
 .about-card button:hover {
-   background-color: #171716;
+   background-color: #202020;
    color: white;
 }
 .start_button{
