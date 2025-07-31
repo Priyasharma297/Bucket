@@ -1,107 +1,115 @@
-exports.register=(req,res)=>{
-    console.log(req.body);
-    const mysql=require("mysql2");
-    const db = mysql.createConnection({
-        host: process.env.HOST,
-        user: process.env.USER,
-        password: process.env.PASSWORD,
-        database: process.env.DATABASE
-    });
-    const{name,email,password,passwordConfirmed}=req.body;
-     db.query('SELECT email FROM user WHERE email=?',[email],async(error,results)=>{
-        if(error){
-            console.log(error);
+const jwt = require('jsonwebtoken');
+const User = require('../models/userModel');  // MongoDB User model
+const cloudinary = require('../utils/cloudinary'); // Import Cloudinary config from cloudinary.js
+const multer = require('multer');
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
+// REGISTER
+exports.register = async (req, res) => {
+    const { name, email, password, passwordConfirmed } = req.body;
+
+    try {
+        // Check if the email is already taken
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.render('register', { message: 'Email is already in use, use another one.' });
         }
-        if(results.length>0){
-            return res.render('register',{
-                message:'Email is already in use , use another....'
-            })
+
+        // Check if passwords match
+        if (password !== passwordConfirmed) {
+            return res.render('register', { message: 'Password does not match!' });
         }
-        else if(password!==passwordConfirmed){
-            return res.render('register',{
-                message:'Password do not match !!'
-            });
-        }
-db.query('INSERT INTO user SET ?',{name:name, email:email,password:password},(error, results)=>{
-    if(error){
-        console.log(error)
-    }else{
-        console.log(results);
-        return res.render('register',{
-            message:'User registered'
-        });
+
+        // Create a new user and save to MongoDB
+        const newUser = new User({ name, email, password });
+        await newUser.save();
+
+        return res.render('register', { message: 'User registered successfully' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send('Internal Server Error');
     }
-})
+};
 
-     });
-}
-exports.login = (req, res) => {
-    const mysql = require("mysql2");
-    const db = mysql.createConnection({
-        host: process.env.HOST,
-        user: process.env.USER,
-        password: process.env.PASSWORD,
-        database: process.env.DATABASE
-    });
-
+// LOGIN
+// LOGIN
+exports.login = async (req, res) => {
     const { email, password } = req.body;
 
-    db.query('SELECT * FROM user WHERE email = ?', [email], (error, results) => {
-        if (error) {
-            console.log(error);
-            return res.status(500).send('Internal Server Error');
+    try {
+        // Find user by email
+        const user = await User.findOne({ email });
+        if (!user || user.password !== password) {
+            return res.render('login', { message: 'Email or password is incorrect' });
         }
 
-        if (results.length === 0) {
-            return res.render('login', {
-                message: 'Email or password is incorrect'
-            });
-        }
+        // Generate JWT token
+        const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '2h' });
 
-        const user = results[0];
+        // Set token in cookie
+        res.cookie('token', token, { httpOnly: true, secure: true, sameSite: 'Strict', maxAge: 1000 * 60 * 60 * 24 });
 
-        if (user.password !== password) {
-            return res.render('login', {
-                message: 'Email or password is incorrect'
-            });
-        }
-        req.session.user = user;
-
-        console.log("Login successful");
-        return res.render('user', {
-            message: 'Login successful',
-            user: user
-        });
-    });
-};
-exports.updateProfile = (req, res) => {
-    const { address, city, mobile, age, gender } = req.body;
-    const user = req.session.user;
-    const mysql = require("mysql2");
-    if (!user) {
-        return res.status(401).send('Unauthorized');
+        return res.render('user', { message: 'Login successful', user });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send('Internal Server Error');
     }
-
-    const db = mysql.createConnection({
-        host: process.env.HOST,
-        user: process.env.USER,
-        password: process.env.PASSWORD,
-        database: process.env.DATABASE
-    });
-
-    const query = 'UPDATE user SET address = ?, city = ?, mobile = ?, age = ?, gender = ? WHERE email = ?';
-    db.query(query, [address, city, mobile, age, gender, user.email], (error, results) => {
-        if (error) {
-            console.log(error);
-            return res.status(500).json({ success: false });
-        }
-
-        user.address = address;
-        user.city = city;
-        user.mobile = mobile;
-        user.age = age;
-        user.gender = gender;
-
-        return res.json({ success: true });
-    });
 };
+
+
+// PROFILE UPDATE
+exports.updateProfile = [
+    upload.single('image'), // Handle image upload
+    async (req, res) => {
+        const { address, city, mobile, age, gender } = req.body;
+        const user = req.user; // Retrieved from JWT middleware
+
+        let profileImageUrl = null;
+
+        try {
+            // If there is an image, upload it to Cloudinary
+            if (req.file) {
+                profileImageUrl = await new Promise((resolve, reject) => {
+                    const uploadStream = cloudinary.uploader.upload_stream(
+                        { folder: 'user_profiles' },
+                        (error, result) => {
+                            if (error) return reject(new Error('Image upload failed'));
+                            resolve(result.secure_url);
+                        }
+                    );
+                    uploadStream.end(req.file.buffer);
+                });
+            }
+
+            // Update the user's profile in MongoDB
+            await updateUserProfile(address, city, mobile, age, gender, profileImageUrl, user.email);
+
+            return res.json({ success: true });
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ success: false, message: error.message });
+        }
+    }
+];
+
+// Helper function to update profile in MongoDB
+async function updateUserProfile(address, city, mobile, age, gender, profileImageUrl, email) {
+    try {
+        await User.updateOne(
+            { email },
+            {
+                $set: {
+                    address,
+                    city,
+                    mobile,
+                    age,
+                    gender,
+                    ...(profileImageUrl && { profileImage: profileImageUrl }) // only update if image exists
+                }
+            }
+        );
+    } catch (error) {
+        throw new Error('Error updating user profile');
+    }
+}
