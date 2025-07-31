@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
+<<<<<<< HEAD
 const User = require('../models/userModel');
+=======
+>>>>>>> 7d350b1cf75121bfbecaf8bf7eca785881a29961
 const { verifyToken } = require('../middleware/authMiddleware'); // import your middleware
 const mysql = require("mysql2");
 
@@ -36,6 +39,7 @@ router.get('/user', verifyToken, (req, res) => {
 });
 
 
+<<<<<<< HEAD
 router.get("/profile", verifyToken, async (req, res) => {
     try {
         // Use await to find the user based on the email from the decoded JWT token
@@ -51,6 +55,23 @@ router.get("/profile", verifyToken, async (req, res) => {
         console.error("Error fetching user:", err);
         res.redirect("/login"); // Redirect if there's an error
     }
+=======
+router.get("/profile", verifyToken, (req, res) => {
+    const db = mysql.createConnection({
+        host: process.env.HOST,
+        user: process.env.USER,
+        password: process.env.PASSWORD,
+        database: process.env.DATABASE,
+    });
+
+    const query = 'SELECT * FROM user WHERE email = ?';
+    db.query(query, [req.user.email], (err, results) => {
+        if (err || results.length === 0) return res.redirect("/login");
+
+        const user = results[0];
+        res.render("profile", { user });
+    });
+>>>>>>> 7d350b1cf75121bfbecaf8bf7eca785881a29961
 });
 
 router.get('/story', verifyToken, (req, res) => {

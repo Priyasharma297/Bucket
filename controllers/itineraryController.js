@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 const axios = require("axios");
 require("dotenv").config();
 
@@ -66,7 +67,75 @@ const formatItinerary = (itineraryText) => {
 
   return { itinerary: formatted, generalTips };
 };
+=======
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+require("dotenv").config();
 
+const genAI = new GoogleGenerativeAI(process.env.API_KEY);
+
+const generateItinerary = async (source, destination, days, budget) => {
+  const prompt = `Create a ${days}-day travel itinerary from ${source} to ${destination} within a budget of ₹${budget}. 
+Include daily plans with travel, food, and sightseeing. Present each day clearly in bullet points or as "Day 1: ..."`; 
+>>>>>>> 7d350b1cf75121bfbecaf8bf7eca785881a29961
+
+  try {
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+
+    const result = await model.generateContent({
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+    });
+
+    const text = result.response.text();
+    return formatItinerary(text);
+  } catch (error) {
+    console.error("AI generation error:", error);
+    throw new Error("Itinerary generation failed.");
+  }
+};
+
+// Format raw Gemini response to array of objects
+// Function to format AI-generated text into a structured array
+const formatItinerary = (itineraryText) => {
+  const lines = itineraryText
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+
+  let formatted = [];
+  let generalTips = [];
+  let currentDay = null;
+  let isTipSection = false;
+
+  lines.forEach((line) => {
+    const dayMatch = line.match(/^(\*\*?)?Day (\d+)(\*\*?)?:?/i);
+    const tipsHeaderMatch = line.toLowerCase().includes("tips for");
+
+    // Clean a line from markdown asterisks
+    const cleanLine = line.replace(/^\*+/, "").replace(/\*\*/g, "").trim();
+
+    if (dayMatch) {
+      currentDay = {
+        dayNumber: dayMatch[2],
+        activities: [],
+      };
+      formatted.push(currentDay);
+      isTipSection = false;
+    } else if (tipsHeaderMatch) {
+      isTipSection = true;
+      generalTips.push(cleanLine);
+    } else if (isTipSection) {
+      generalTips.push(cleanLine);
+    } else if (currentDay) {
+      currentDay.activities.push(cleanLine);
+    }
+  });
+
+  return { itinerary: formatted, generalTips };
+};
+
+
+
+// Controller for handling POST
 const getItinerary = async (req, res) => {
   const { source, destination, days, budget } = req.body;
 
@@ -77,6 +146,7 @@ const getItinerary = async (req, res) => {
   }
 
   try {
+<<<<<<< HEAD
     const { itinerary, generalTips } = await generateItinerary(
       source,
       destination,
@@ -91,6 +161,11 @@ const getItinerary = async (req, res) => {
       days,
       budget,
     });
+=======
+    const { itinerary, generalTips } = await generateItinerary(source, destination, days, budget);
+res.render("itinerary", { itinerary, generalTips, source, destination, days, budget });
+
+>>>>>>> 7d350b1cf75121bfbecaf8bf7eca785881a29961
   } catch (error) {
     res.status(500).render("itinerary", {
       error: "Failed to generate itinerary. Please try again later.",

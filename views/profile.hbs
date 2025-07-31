@@ -25,7 +25,11 @@
     <br>
     <div class="container">
         <div class="profile-header">
+<<<<<<< HEAD
             <img id="profileImage" src="{{user.profileImage}}" alt="User Icon">
+=======
+            <img id="profileImage" src="{{#if user.profileImage}}{{user.profileImage}}{{else}}https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ_Ctio9d7UbPoFkuH6-h1kqcruqY3kgjwBSA&s{{/if}}" alt="User Icon">
+>>>>>>> 7d350b1cf75121bfbecaf8bf7eca785881a29961
             <div class="details">
                 <h1>{{user.name}}</h1>
                 <p><b>Email: </b>{{user.email}}</p>

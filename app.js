@@ -6,7 +6,11 @@ const hbs = require('hbs');                   // For frontend
 const dotenv = require('dotenv');             // To manage environment variables
 const cookieParser = require('cookie-parser');
 
+<<<<<<< HEAD
 // Load environment variables
+=======
+
+>>>>>>> 7d350b1cf75121bfbecaf8bf7eca785881a29961
 dotenv.config({ path: './.env' });
 
 // Register partials and helpers for Handlebars
@@ -18,10 +22,23 @@ hbs.registerHelper('equals', function (a, b) {
 const app = express();
 app.set('view engine', 'hbs');
 
+<<<<<<< HEAD
 // Middleware
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, './public')));
 app.use('/uploads', express.static(path.join(__dirname, './uploads')));
+=======
+const cookieParser = require('cookie-parser');
+app.use(cookieParser());
+
+const db = mysql.createConnection({
+    host: process.env.HOST,
+    user: process.env.USER,
+    password: process.env.PASSWORD,
+    database: process.env.DATABASE,
+    port: process.env.PORT
+});
+>>>>>>> 7d350b1cf75121bfbecaf8bf7eca785881a29961
 
 // Parse incoming requests
 app.use(express.urlencoded({ extended: false }));

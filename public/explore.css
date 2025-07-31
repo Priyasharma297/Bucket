@@ -57,8 +57,11 @@ image-grid img {
         margin: 0;
         padding: 0;
         width: 100%;
+<<<<<<< HEAD
         background-image: none;
         background-color: beige;
+=======
+>>>>>>> 7d350b1cf75121bfbecaf8bf7eca785881a29961
     }
 
     *, *::before, *::after {
@@ -121,8 +124,11 @@ image-grid img {
         margin: 0;
         padding: 0;
         width: 100%;
+<<<<<<< HEAD
         background-image: none;
         background-color: beige;
+=======
+>>>>>>> 7d350b1cf75121bfbecaf8bf7eca785881a29961
     }
 
     *, *::before, *::after {

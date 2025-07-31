@@ -164,8 +164,11 @@ background-color: #010101;
         box-sizing: border-box;
         margin: 0;
         padding: 0;
+<<<<<<< HEAD
         background-image: none;
         background-color: beige;
+=======
+>>>>>>> 7d350b1cf75121bfbecaf8bf7eca785881a29961
     }
 
     nav {
@@ -175,6 +178,7 @@ background-color: #010101;
         align-items: flex-start;
         width: 100%;
         box-sizing: border-box;
+<<<<<<< HEAD
     }
     input[type="checkbox"] {
         width: 5px;
@@ -260,6 +264,91 @@ background-color: #010101;
         align-items: flex-start;
         padding: 0;
         font-size: 12px;
+=======
+>>>>>>> 7d350b1cf75121bfbecaf8bf7eca785881a29961
+    }
+
+    nav ul {
+        display: flex;
+        flex-wrap: wrap;
+        width: 100%;
+        padding: 0;
+        margin: 0;
+        list-style: none;
+<<<<<<< HEAD
+=======
+        gap: 0;
+>>>>>>> 7d350b1cf75121bfbecaf8bf7eca785881a29961
+    }
+
+    nav ul li {
+        width: 33.33%;
+        text-align: center;
+        padding: 4px 0;
+        margin: 0;
+        font-size: 11px;
+        line-height: 1.2;
+        box-sizing: border-box;
+<<<<<<< HEAD
+    }
+
+=======
+    }
+
+    .bucket-list-item {
+        flex-direction: row;
+        align-items: center;
+        width: 100%;
+        box-sizing: border-box;
+        flex-wrap: wrap;
+        padding: 10px 20px; /* Add horizontal padding */
+        margin: 10px auto;  /* Add some vertical space and center if needed */
+    }
+    .ull{
+        padding-right: 15px;
+        padding-left: 15px;
+    }  
+    .enlarge-on-click {
+        width: 70px;
+        height: 70px;
+        border-radius: 1px;
+        padding-right: 20px;
+        cursor: pointer;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .enlarge-on-click:hover {
+        transform: scale(5);
+        z-index: 10;
+        position: relative;
+    }  
+    
+    .bucket-list-item span {
+        padding: 10px;
+        font-size: 12px;
+        margin: 5px;
+    }
+    .ull button{
+        width: 100px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    html, body {
+        width: 100%;
+        overflow-x: hidden;
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-size: 14px;
+    }
+
+    nav {
+        width: 100%;
+        box-sizing: border-box;
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 0;
+        font-size: 12px;
     }
 
     nav ul {
@@ -281,6 +370,7 @@ background-color: #010101;
         box-sizing: border-box;
     }
 
+>>>>>>> 7d350b1cf75121bfbecaf8bf7eca785881a29961
     nav h4 {
         font-size: 16px;
         margin: 5px 0;
